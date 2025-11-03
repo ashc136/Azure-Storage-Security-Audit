@@ -1,0 +1,108 @@
+# PowerShell module artifacts
+bin/
+obj/
+*.psd1~
+*.psm1~
+*.ps1~
+
+# Build artifacts
+publish/
+out/
+build/
+
+# Test results
+TestResults/
+*.trx
+coverage.xml
+testcoverage.html
+
+# Pester
+Pester*.xml
+
+# Package files
+*.nupkg
+*.zip
+
+# Audit report files
+*.html
+storage-audit-*.html
+audit-*.html
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Azure credentials and sensitive data
+*.publishsettings
+*.azurePubxml
+azureprofile.json
+ServiceConfiguration.Local.cscfg
+*.cer
+*.pfx
+*.key
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+
+# Environment files
+.env
+.env.local
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Compiled files
+*.dll
+*.exe
+*.pdb
+
+# NuGet
+packages/
+.nuget/
+
+# Node modules (if using any JS tools)
+node_modules/
+
+# Python (if using any Python tools)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Misc
+*.swp
+*.swo
+*~
