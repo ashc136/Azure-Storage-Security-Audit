@@ -161,16 +161,6 @@ if ($LASTEXITCODE -eq 2) {
 }
 ```
 
-## Real-World Context
-
-This tool was developed in response to high-profile Azure Storage misconfigurations:
-
-### Ernst & Young Data Breach (2025)
-- **Exposure:** 4TB SQL Server backup file
-- **Cause:** Container ACL set to PUBLIC instead of PRIVATE
-- **Data:** API keys, passwords, client financial information
-- **Impact:** Discoverable via simple URL patterns
-
 **How attackers find exposed storage:**
 ```
 https://{storage-account-name}.blob.core.windows.net/{container}/{file}
