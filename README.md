@@ -187,15 +187,6 @@ Based on audit findings, implement these controls:
 9. **Use Private Endpoints** for production workloads
 10. **Implement Azure Policy** to prevent misconfigurations
 
-## Roadmap
-
-- [ ] Azure Policy export for automatic remediation
-- [ ] JSON/CSV export formats
-- [ ] Integration with Azure Security Center
-- [ ] Slack/Teams notifications
-- [ ] Terraform/Bicep templates for fixes
-- [ ] Container image scanning
-- [ ] SAS token auditing
 
 ## Contributing
 
