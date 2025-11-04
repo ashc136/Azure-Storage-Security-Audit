@@ -138,14 +138,13 @@ Warnings: 7
 
 ### HTML Report
 
-Professional HTML report with:
+  HTML report with:
 - Executive summary dashboard
 - Detailed findings per subscription
 - Storage account security checks
 - Container-level details
 - Backup file listings
 
-![Sample Report](docs/sample-report.png)
 
 ## Exit Codes
 
