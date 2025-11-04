@@ -17,7 +17,6 @@ This tool performs a **read-only security audit** of all Azure Storage Accounts 
 - ✅ **Container-level auditing** - Identifies publicly accessible containers
 - ✅ **Backup file detection** - Finds sensitive backup files (.bak, .sql, .dump)
 - ✅ **HTML reporting** - Professional audit reports with detailed findings
-- ✅ **Zero modifications** - Read-only tool, makes no changes to your environment
 - ✅ **Exit codes** - Integrate with CI/CD pipelines
 
 ## What It Checks
