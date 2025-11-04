@@ -45,7 +45,7 @@ This tool performs a **read-only security audit** of all Azure Storage Accounts 
 
 ### Option 1: Clone Repository
 ```powershell
-git clone https://github.com/YOUR-USERNAME/Azure-Storage-Security-Audit.git
+git clone https://github.com/ashc136/Azure-Storage-Security-Audit.git
 cd Azure-Storage-Security-Audit
 ```
 
@@ -204,7 +204,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 
-**Ash C** - Cloud Security Engineer
+**Ash C** - Cloud Engineer
 
 ## Acknowledgments
 
