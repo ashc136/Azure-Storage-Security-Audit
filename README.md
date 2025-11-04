@@ -2,7 +2,7 @@
 PowerShell tool to audit Azure Storage Accounts for security misconfigurations across all subscriptions
 # Azure Storage Security Audit Tool
 
-A comprehensive PowerShell tool to audit Azure Storage Accounts for security misconfigurations across all subscriptions. Inspired by real-world breaches like the Ernst & Young 4TB data exposure incident.
+A comprehensive PowerShell tool to audit Azure Storage Accounts for security misconfigurations across all subscriptions. Inspired by real-world breaches like the EY 4TB data exposure incident.
 
 https://www.linkedin.com/pulse/ernst-young-ey-exposes-4tb-database-online-what-qypre/
 
