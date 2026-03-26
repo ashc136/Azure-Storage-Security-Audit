@@ -36,8 +36,9 @@ This tool performs a **read-only security audit** of all Azure Storage Accounts 
 
 - **PowerShell 5.1** or **PowerShell 7+**
 - **Azure PowerShell modules:**
-  - `Az.Storage`
-  - `Az.Accounts`
+- `Az.Storage`
+- `Az.Accounts`
+- `Az.Monitor`
 - **Azure permissions:** Reader role on subscriptions
 
 ## Installation
@@ -56,6 +57,7 @@ Download `Audit-AzureStorageSecurity.ps1` directly from the repository.
 ```powershell
 Install-Module -Name Az.Storage -Scope CurrentUser -Force
 Install-Module -Name Az.Accounts -Scope CurrentUser -Force
+Install-Module -Name Az.Monitor -Scope CurrentUser -Force
 ```
 
 ## Usage
