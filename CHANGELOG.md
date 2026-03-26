@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-03-27
+
+### Fixed
+
+- Public blob access check now correctly flags storage accounts where the property returns null, which occurs on accounts created before the setting was introduced
+- Container public access comparison updated to reliably handle both None and Off values returned by the Azure SDK
+- Removed TLS1_3 from valid TLS version check as this value is not returned by the Azure API
+- Initialised containers variable before the try block to prevent null reference errors in backup file scanning when container enumeration fails
+
+### Added
+
+- Az.Monitor added as a required module and explicitly imported to ensure diagnostic logging check works correctly
+
 ## [1.0.0] - 2025-11-03
 
 ### Added
