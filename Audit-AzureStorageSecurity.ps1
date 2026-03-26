@@ -37,8 +37,8 @@
 .NOTES
     Author: Ash C
     Date: 2025-11-03
-    Version: 1.0
-    Requires: Az.Storage, Az.Accounts PowerShell modules
+    Version: 1.1
+    Requires: Az.Storage, Az.Accounts, Az.Monitor PowerShell modules
     Permissions: Reader role on subscriptions being audited
 #>
 
@@ -74,7 +74,7 @@ function Write-Check {
 Write-Status "`nAzure Storage Security Audit - All Subscriptions" -Color Cyan
 Write-Status "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')`n" -Color Gray
 
-# Check modules
+# Check and install required modules
 if (-not (Get-Module -ListAvailable -Name Az.Storage)) {
     Write-Status "Installing Az.Storage module..." -Color Yellow
     Install-Module -Name Az.Storage -Scope CurrentUser -Force -AllowClobber
@@ -83,7 +83,12 @@ if (-not (Get-Module -ListAvailable -Name Az.Accounts)) {
     Write-Status "Installing Az.Accounts module..." -Color Yellow
     Install-Module -Name Az.Accounts -Scope CurrentUser -Force -AllowClobber
 }
-Import-Module Az.Storage, Az.Accounts -ErrorAction Stop
+if (-not (Get-Module -ListAvailable -Name Az.Monitor)) {
+    Write-Status "Installing Az.Monitor module..." -Color Yellow
+    Install-Module -Name Az.Monitor -Scope CurrentUser -Force -AllowClobber
+}
+
+Import-Module Az.Storage, Az.Accounts, Az.Monitor -ErrorAction Stop
 
 # Check authentication
 $context = Get-AzContext
@@ -184,11 +189,12 @@ foreach ($subscription in $subscriptions) {
         }
         
         # CHECK 1: Public Blob Access
+        # Fix: explicit $false comparison to handle $null on older storage accounts
         Write-Status "CHECK 1: Public Blob Access..." -Color Yellow
         $publicAccess = $sa.AllowBlobPublicAccess
-        $passed = -not $publicAccess
+        $passed = ($publicAccess -eq $false)
         Write-Check -Name $(if($passed){"Disabled"}else{"ENABLED - CRITICAL"}) -Passed $passed
-        if(-not $passed) { 
+        if (-not $passed) { 
             $script:CriticalIssues++
             $accountResult.Critical++
             $subCritical++
@@ -199,7 +205,7 @@ foreach ($subscription in $subscriptions) {
         Write-Status "`nCHECK 2: HTTPS Enforcement..." -Color Yellow
         $httpsOnly = $sa.EnableHttpsTrafficOnly
         Write-Check -Name $(if($httpsOnly){"Enforced"}else{"NOT enforced - CRITICAL"}) -Passed $httpsOnly
-        if(-not $httpsOnly) { 
+        if (-not $httpsOnly) { 
             $script:CriticalIssues++
             $accountResult.Critical++
             $subCritical++
@@ -207,11 +213,12 @@ foreach ($subscription in $subscriptions) {
         $accountResult.Checks += @{Name="HTTPS Only"; Status=if($httpsOnly){"PASS"}else{"CRITICAL"}; Value=if($httpsOnly){"Yes"}else{"No"}}
         
         # CHECK 3: TLS Version
+        # Fix: removed TLS1_3 which is not a valid value returned by the Azure API
         Write-Status "`nCHECK 3: Minimum TLS Version..." -Color Yellow
         $tlsVersion = $sa.MinimumTlsVersion
-        $tlsOk = $tlsVersion -eq "TLS1_2" -or $tlsVersion -eq "TLS1_3"
-        Write-Check -Name "TLS $tlsVersion $(if(-not $tlsOk){'- Upgrade to 1.2+'})" -Passed $tlsOk
-        if(-not $tlsOk) { 
+        $tlsOk = $tlsVersion -eq "TLS1_2"
+        Write-Check -Name "TLS $tlsVersion $(if(-not $tlsOk){'- Upgrade to 1.2'})" -Passed $tlsOk
+        if (-not $tlsOk) { 
             $script:WarningIssues++
             $accountResult.Warnings++
             $subWarnings++
@@ -224,7 +231,7 @@ foreach ($subscription in $subscriptions) {
         $fileEnc = $sa.Encryption.Services.File.Enabled
         $encOk = $blobEnc -and $fileEnc
         Write-Check -Name $(if($encOk){"Enabled"}else{"NOT fully enabled - CRITICAL"}) -Passed $encOk -Details "Blob: $blobEnc, File: $fileEnc"
-        if(-not $encOk) { 
+        if (-not $encOk) { 
             $script:CriticalIssues++
             $accountResult.Critical++
             $subCritical++
@@ -236,7 +243,7 @@ foreach ($subscription in $subscriptions) {
         $defaultAction = $sa.NetworkRuleSet.DefaultAction
         $firewallOk = $defaultAction -eq "Deny"
         Write-Check -Name "Default: $defaultAction $(if(-not $firewallOk){'- WARNING'})" -Passed $firewallOk
-        if(-not $firewallOk) { 
+        if (-not $firewallOk) { 
             $script:WarningIssues++
             $accountResult.Warnings++
             $subWarnings++
@@ -244,20 +251,23 @@ foreach ($subscription in $subscriptions) {
         $accountResult.Checks += @{Name="Network Firewall"; Status=if($firewallOk){"PASS"}else{"WARNING"}; Value="Default: $defaultAction"}
         
         # CHECK 6: Container Public Access
+        # Fix: initialise $containers to empty array before try block to prevent null reference in CHECK 7
         Write-Status "`nCHECK 6: Containers..." -Color Yellow
+        $containers = @()
         try {
             $ctx = New-AzStorageContext -StorageAccountName $sa.StorageAccountName -UseConnectedAccount
             $containers = Get-AzStorageContainer -Context $ctx
             
-            if($containers.Count -eq 0) {
+            if ($containers.Count -eq 0) {
                 Write-Status "   No containers found" -Color Gray
                 $accountResult.ContainerDetails += @{Name="(none)"; Status="No containers"; PublicAccess="N/A"}
             } else {
                 $publicContainers = @()
-                foreach($c in $containers) {
-                    $isPublic = $c.PublicAccess -and $c.PublicAccess -ne "Off" -and $c.PublicAccess -ne "None"
+                foreach ($c in $containers) {
+                    # Fix: reliable public access check - Azure SDK returns None for private, not "Off"
+                    $isPublic = ($null -ne $c.PublicAccess) -and ($c.PublicAccess -ne "Off") -and ($c.PublicAccess -ne "None")
                     
-                    if($isPublic) {
+                    if ($isPublic) {
                         Write-Host "      [FAIL] $($c.Name): PUBLIC ($($c.PublicAccess)) - CRITICAL" -ForegroundColor Red
                         $publicContainers += $c.Name
                         $script:CriticalIssues++
@@ -277,18 +287,19 @@ foreach ($subscription in $subscriptions) {
         }
         
         # CHECK 7: Backup Files (if Detailed)
-        if($Detailed) {
+        # Fix: $containers is now always initialised so this loop is safe even if CHECK 6 threw
+        if ($Detailed) {
             Write-Status "`nCHECK 7: Backup Files..." -Color Yellow
             $backupExts = @(".bak", ".sql", ".dump", ".backup")
             $backupFilesFound = @()
             
             try {
-                foreach($c in $containers) {
+                foreach ($c in $containers) {
                     try {
                         $blobs = Get-AzStorageBlob -Container $c.Name -Context $ctx -ErrorAction SilentlyContinue
-                        foreach($blob in $blobs) {
+                        foreach ($blob in $blobs) {
                             $ext = [System.IO.Path]::GetExtension($blob.Name).ToLower()
-                            if($backupExts -contains $ext) {
+                            if ($backupExts -contains $ext) {
                                 $sizeGB = [math]::Round($blob.Length / 1GB, 2)
                                 $sizeMB = [math]::Round($blob.Length / 1MB, 2)
                                 $displaySize = if($sizeGB -gt 0.1) { "$sizeGB GB" } else { "$sizeMB MB" }
@@ -310,7 +321,7 @@ foreach ($subscription in $subscriptions) {
                     } catch {}
                 }
                 
-                if($backupFilesFound.Count -eq 0) {
+                if ($backupFilesFound.Count -eq 0) {
                     Write-Status "   [PASS] No backup files found" -Color Green
                 } else {
                     $accountResult.BackupFiles = $backupFilesFound
@@ -328,7 +339,7 @@ foreach ($subscription in $subscriptions) {
             $softDelete = $blobProps.DeleteRetentionPolicy.Enabled
             $days = $blobProps.DeleteRetentionPolicy.Days
             Write-Check -Name $(if($softDelete){"Enabled ($days days)"}else{"Disabled - WARNING"}) -Passed $softDelete
-            if(-not $softDelete) { 
+            if (-not $softDelete) { 
                 $script:WarningIssues++
                 $accountResult.Warnings++
                 $subWarnings++
@@ -340,12 +351,13 @@ foreach ($subscription in $subscriptions) {
         }
         
         # CHECK 9: Diagnostic Logging
+        # Fix: now uses Az.Monitor which is explicitly imported at the top
         Write-Status "`nCHECK 9: Diagnostic Logging..." -Color Yellow
         try {
             $diag = Get-AzDiagnosticSetting -ResourceId $sa.Id -ErrorAction SilentlyContinue
             $diagEnabled = $diag -and $diag.Count -gt 0
             Write-Check -Name $(if($diagEnabled){"Configured"}else{"Not configured - WARNING"}) -Passed $diagEnabled
-            if(-not $diagEnabled) { 
+            if (-not $diagEnabled) { 
                 $script:WarningIssues++
                 $accountResult.Warnings++
                 $subWarnings++
@@ -390,14 +402,14 @@ foreach ($subResult in $script:SubscriptionResults) {
 }
 Write-Host ""
 
-if($script:CriticalIssues -eq 0 -and $script:WarningIssues -eq 0) {
+if ($script:CriticalIssues -eq 0 -and $script:WarningIssues -eq 0) {
     Write-Status "[OK] All checks passed across all subscriptions!" -Color Green
 } else {
     Write-Status "[WARNING] Issues found - review and remediate" -Color Red
 }
 
 # Export report
-if($ExportReport) {
+if ($ExportReport) {
     Write-Status "`nGenerating HTML report..." -Color Yellow
     
     $html = @"
@@ -517,7 +529,7 @@ if($ExportReport) {
         <p><strong>Storage Accounts in this subscription:</strong> $($subGroup.Count)</p>
 "@
         
-        foreach($result in $subGroup.Group) {
+        foreach ($result in $subGroup.Group) {
             $html += @"
         <div class="account">
             <h3>$($result.Name)</h3>
@@ -542,12 +554,12 @@ if($ExportReport) {
                 </thead>
                 <tbody>
 "@
-            foreach($check in $result.Checks) {
+            foreach ($check in $result.Checks) {
                 $statusClass = switch($check.Status) {
                     "CRITICAL" {"critical"}
-                    "WARNING" {"warning"}
-                    "PASS" {"pass"}
-                    default {"info"}
+                    "WARNING"  {"warning"}
+                    "PASS"     {"pass"}
+                    default    {"info"}
                 }
                 
                 $html += @"
@@ -561,9 +573,9 @@ if($ExportReport) {
             $html += "</tbody></table>"
             
             # Add container details if available
-            if($result.ContainerDetails.Count -gt 0) {
+            if ($result.ContainerDetails.Count -gt 0) {
                 $html += "<h4>Container Details</h4><div class='container-list'>"
-                foreach($container in $result.ContainerDetails) {
+                foreach ($container in $result.ContainerDetails) {
                     $containerClass = if($container.Status -eq "CRITICAL"){"public"}elseif($container.Status -eq "PASS"){"private"}else{""}
                     $html += "<div class='container-item $containerClass'><strong>$($container.Name)</strong> - $($container.PublicAccess)</div>"
                 }
@@ -571,9 +583,9 @@ if($ExportReport) {
             }
             
             # Add backup files if found
-            if($result.BackupFiles.Count -gt 0) {
+            if ($result.BackupFiles.Count -gt 0) {
                 $html += "<h4>Backup Files Found</h4><div class='backup-list'>"
-                foreach($backup in $result.BackupFiles) {
+                foreach ($backup in $result.BackupFiles) {
                     $html += "<div class='backup-item'><strong>$($backup.Container)/$($backup.FileName)</strong> - Size: $($backup.Size)</div>"
                 }
                 $html += "</div>"
@@ -615,6 +627,6 @@ if($ExportReport) {
 Write-Status "`nCompleted: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -Color Gray
 
 # Exit codes
-if($script:CriticalIssues -gt 0) { exit 2 }
-elseif($script:WarningIssues -gt 0) { exit 1 }
+if ($script:CriticalIssues -gt 0) { exit 2 }
+elseif ($script:WarningIssues -gt 0) { exit 1 }
 else { exit 0 }
