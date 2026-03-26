@@ -222,8 +222,8 @@ This tool is provided as-is for security auditing purposes. Always test in non-p
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/YOUR-USERNAME/Azure-Storage-Security-Audit/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/YOUR-USERNAME/Azure-Storage-Security-Audit/discussions)
+- **Issues:** [GitHub Issues](https://github.com/ashc136/Azure-Storage-Security-Audit/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/ashc136/Azure-Storage-Security-Audit/discussions)
 
 ## Related Resources
 
