@@ -220,10 +220,6 @@ This tool is provided as-is for security auditing purposes. Always test in non-p
 
 **⭐ If this tool helped secure your Azure environment, please star the repository!**
 
-## Support
-
-- **Issues:** [GitHub Issues](https://github.com/ashc136/Azure-Storage-Security-Audit/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/ashc136/Azure-Storage-Security-Audit/discussions)
 
 ## Related Resources
 
