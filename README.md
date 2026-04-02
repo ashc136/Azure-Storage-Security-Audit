@@ -226,7 +226,8 @@ This tool is provided as-is for security auditing purposes. Always test in non-p
 
 - [Azure Storage Security Guide](https://docs.microsoft.com/azure/storage/common/storage-security-guide)
 - [Azure Storage Best Practices](https://docs.microsoft.com/azure/storage/blobs/security-recommendations)
-- [Ernst & Young Breach Analysis](https://www.linkedin.com/pulse/ernst-young-ey-exposes-4tb-database-online-what-qypre/)
+- [Ernst & Young Breach Analysis — Neo Security](https://www.neosecurity.nl/blog/ey-data-leak-4tb-sql-server-backup)
+
 ```
 
 
