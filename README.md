@@ -229,35 +229,4 @@ This tool is provided as-is for security auditing purposes. Always test in non-p
 - [Ernst & Young Breach Analysis](https://www.linkedin.com/pulse/ernst-young-ey-exposes-4tb-database-online-what-qypre/)
 ```
 
----
 
-### 📄 File 3: `LICENSE`
-
-(GitHub will create this automatically if you selected MIT License during repo creation)
-
----
-
-### 📄 File 4: `.gitignore`
-
-(GitHub creates this automatically if you selected PowerShell template)
-
-If not, create it:
-```
-# PowerShell
-*.ps1~
-*.psm1~
-
-# Audit reports
-*.html
-storage-audit-*.html
-
-# Azure credentials
-*.publishsettings
-
-# Test files
-test/
-temp/
-
-# OS files
-.DS_Store
-Thumbs.db
