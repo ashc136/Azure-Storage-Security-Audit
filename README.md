@@ -219,6 +219,17 @@ This tool is provided as-is for security auditing purposes. Always test in non-p
 
 ---
 
+## Screenshots
+
+**Overall Summary**
+![Summary](docs/screenshot-summary.png)
+
+**Subscriptions Breakdown**
+![Subscriptions](docs/screenshot-subscriptions.png)
+
+**Storage Account Detail**
+![Detail](docs/screenshot-detail.png)
+
 **⭐ If this tool helped secure your Azure environment, please star the repository!**
 
 
