@@ -222,13 +222,13 @@ This tool is provided as-is for security auditing purposes. Always test in non-p
 ## Screenshots
 
 **Overall Summary**
-![Summary](docs/screenshot-summary.png)
+<img src="docs/screenshot-summary.png" width="700"/>
 
 **Subscriptions Breakdown**
-![Subscriptions](docs/screenshot-subscriptions.png)
+<img src="docs/screenshot-subscriptions.png" width="700"/>
 
 **Storage Account Detail**
-![Detail](docs/screenshot-detail.png)
+<img src="docs/screenshot-detail.png" width="700"/>
 
 **⭐ If this tool helped secure your Azure environment, please star the repository!**
 
